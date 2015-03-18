@@ -33,7 +33,7 @@ namespace PP
 	class SDLAppWindow : IAppWindow
 	{
 	public:
-		SDLAppWindow(const SDL_AW_Params&);
+		SDLAppWindow(const SDL_AW_Params& params);
 		~SDLAppWindow();
 
 		virtual void		VInit()						override;
