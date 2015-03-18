@@ -42,7 +42,18 @@ namespace PP
 
 	void SDLAppWindow::VSetFullscreen(bool flag)
 	{
+		m_fullscreen = flag;
 
+		if (flag)
+		{
+			SDL_SetWindowFullscreen(m_win_handler, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		}
+		else
+		{
+			SDL_SetWindowFullscreen(m_win_handler, 0);
+		}
+
+		//TODO: setViewport etc.
 	}
 
 	void SDLAppWindow::VSwapBuffers()
