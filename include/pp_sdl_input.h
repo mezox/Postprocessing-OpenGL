@@ -26,6 +26,7 @@ namespace PP
 	{
 	public:
 		SDLMouseState();
+		~SDLMouseState();
 
 		const int X() const;
 		const int Y() const;
@@ -34,9 +35,9 @@ namespace PP
 		bool ButtonPress(int button);
 		bool SingleButtonPress(int button);
 
-		bool MouseMove(int x, int y);
-		bool MouseEvent(SDL_MouseButtonEvent e);
-		bool Update();
+		void MouseMove(int x, int y);
+		void MouseEvent(SDL_MouseButtonEvent e);
+		void Update();
 
 	private:
 		int	m_x;
