@@ -7,13 +7,10 @@ namespace PP
 {
 	class INonCopy
 	{
-	protected:
-		INonCopy() {}
-		~INonCopy() {}
-
 	private:
-		INonCopy(const INonCopy& other);
-		const INonCopy& operator = (const INonCopy& other);
+		INonCopy() = default;
+		INonCopy(const INonCopy& other) = delete;
+		const INonCopy& operator = (const INonCopy& other) = delete;
 	};
 }
 
