@@ -1,6 +1,8 @@
 #ifndef PP_INTERFACES_INONCOPY
 #define PP_INTERFACES_INONCOPY
 
+#include <pp_platform.h>
+
 namespace PP
 {
 	class INonCopy
