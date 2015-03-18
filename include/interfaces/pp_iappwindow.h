@@ -3,8 +3,7 @@
 
 #include <pp_platform.h>
 #include <pp_inoncopy.h>
-
-#include <string>
+#include <pp_types.h>
 
 namespace PP
 {
@@ -13,25 +12,28 @@ namespace PP
 	public:
 		virtual ~IAppWindow() {}
 
+		virtual void		VInit() = 0;
+		virtual void		VRun() = 0;
+		virtual void		VSetFullscreen(bool flag) = 0;
+		virtual void		VSetVisible(bool flag) = 0;
+		virtual void		VSwapBuffers() = 0;
+		virtual void		VToggleCursor() = 0;
+		virtual void		VClose() = 0;
 
-		virtual void	VInit() = 0;
-		virtual void	VRun() = 0;
-		virtual void	VSetFullscreen(bool flag) = 0;
-		virtual void	VSetVisible(bool flag) = 0;
-		virtual void	VSwapBuffers() = 0;
-		virtual void	VClose() = 0;
-
-		virtual const std::string&	VGetTitle() = 0;
+		virtual cstring&	VGetTitle() = 0;
 
 
-		virtual bool	VIsRunning() = 0;
-		virtual bool	VIsHidden() = 0;
+		virtual bool		VIsRunning() = 0;
+		virtual bool		VIsPaused() = 0;
+		virtual bool		VIsHidden() = 0;
+
+		static const size_t	DEF_WINDOW_WIDTH = 1280;
+		static const size_t	DEF_WINDOW_HEIGHT = 720;
 
 	private:
 
 	protected:
 
 	};
-
 }
 #endif

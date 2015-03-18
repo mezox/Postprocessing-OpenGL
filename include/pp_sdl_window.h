@@ -33,21 +33,21 @@ namespace PP
 	class SDLAppWindow : IAppWindow
 	{
 	public:
-		SDLAppWindow(const int);
+		SDLAppWindow(const SDL_AW_Params&);
 		~SDLAppWindow();
 
-		virtual void	VInit()							override;
-		virtual void	VRun()							override;
-		virtual void	VSetFullscreen(bool flag)		override;
-		virtual void	VSetVisible(bool flag)			override;
-		virtual void	VSwapBuffers()					override;
-		virtual void	VClose()						override;
+		virtual void		VInit()						override;
+		virtual void		VRun()						override;
+		virtual void		VSetFullscreen(bool flag)	override;
+		virtual void		VSetVisible(bool flag)		override;
+		virtual void		VSwapBuffers()				override;
+		virtual void		VToggleCursor()				override;
+		virtual void		VClose()					override;
 
-		virtual const std::string&	VGetTitle()			override;
-
-
-		virtual bool	VIsRunning()					override;
-		virtual bool	VIsHidden()						override;
+		virtual cstring&	VGetTitle()					override;
+		virtual bool		VIsRunning()				override;
+		virtual bool		VIsPaused()					override;
+		virtual bool		VIsHidden()					override;
 
 	private:
 		std::string		m_title;
@@ -55,12 +55,10 @@ namespace PP
 		bool			m_running;
 		bool			m_paused;
 		bool			m_fullscreen;
+		bool			m_cursor_hidden;
 		SDL_Window*		m_win_handler;
 		SDL_GLContext	m_gl_context;
 		SDL_AW_Params	m_params;
 	};
-
 }
-
-
 #endif
