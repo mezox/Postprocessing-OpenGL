@@ -94,6 +94,7 @@ namespace PP
 
 
 
+
 	SDLKeyState::SDLKeyState()
 	{
 
@@ -102,5 +103,25 @@ namespace PP
 	SDLKeyState::~SDLKeyState()
 	{
 
+	}
+
+	void SDLKeyState::KeyDown(SDL_Scancode sc)
+	{
+		m_cur[sc] = true;
+	}
+
+	void SDLKeyState::KeyUp(SDL_Scancode sc)
+	{
+		m_cur[sc] = false;
+	}
+
+	void SDLKeyState::Update()
+	{
+		m_prev = m_cur;
+	}
+
+	bool SDLKeyState::SingleKey(SDL_Scancode sc)
+	{
+		return (!m_prev[sc] && m_cur[sc]);
 	}
 }
