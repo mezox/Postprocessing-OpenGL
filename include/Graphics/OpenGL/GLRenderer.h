@@ -16,7 +16,7 @@ public:
 
 	void	Render(Model* model);
 
-	Camera* GetCamera3D() const;
+	GLCamera3D* GetCamera3D() const;
 
 private:
 	GLCamera3D*	m_camera3D;

@@ -1,18 +1,15 @@
-#include <Graphics\GLShader.h>
+#include <Shader.h>
 
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 
-GLShader::GLShader(const std::string& file)
+Shader::Shader(std::string file)
 {
-	m_path = file;
-	m_raw = Readfile(file);
-
-	Compile();
+	m_file = file;
 }
 
-GLShader::~GLShader()
+Shader::~Shader()
 {
 	glDeleteShader(m_id);
 }
@@ -22,33 +19,39 @@ GLShader::~GLShader()
 /// </summary>
 /// <param name="file">File name or path to file.</param>
 /// <returns>Shader source code</returns>
-std::string GLShader::Readfile(const std::string& file)
+bool Shader::Load()
 {
 	std::ifstream input;
 	input.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
 	std::string shader_code;
 
+	std::cout << "Opening " + (SHADER_DIR + m_file) + " \t";
+
 	try
 	{
-		input.open(file.c_str());
-	
-		shader_code.assign((std::istreambuf_iterator<char>(input)),(std::istreambuf_iterator<char>()));
+		input.open((SHADER_DIR + m_file).c_str());
+		shader_code.assign((std::istreambuf_iterator<char>(input)), (std::istreambuf_iterator<char>()));
+
+		std::cout << "[Success]\n";
 	}
-	catch(std::ifstream::failure e)
+	catch (std::ifstream::failure e)
 	{
-		std::cerr << "Exception opening/reading/closing file\n";
+		std::cout << "[Not Found]\n";
+		return false;
 	}
 
-	return shader_code;
+	m_raw = shader_code;
+
+	return true;
 }
 
 /// <summary>
 /// Creates and compiles shader.
 /// </summary>
-void GLShader::Compile()
+void Shader::Compile()
 {
-	TypeFromExtension();
+	m_type = TypeFromExtension();
 
 	GLenum type;
 
@@ -101,10 +104,10 @@ void GLShader::Compile()
 /// <summary>
 /// Validates shader compilation.
 /// </summary>
-void GLShader::ValidateCompile()
+void Shader::ValidateCompile()
 {
 	GLint compiled;
-	
+
 	glGetShaderiv(m_id, GL_COMPILE_STATUS, &compiled);
 
 	if (!compiled)
@@ -126,46 +129,45 @@ void GLShader::ValidateCompile()
 /// <summary>
 /// Extracts shader type from shader file extension [vs|gs|tcs|tes|fs|cs].
 /// </summary>
-void GLShader::TypeFromExtension()
+SHADER::TYPE Shader::TypeFromExtension()
 {
 	std::string ext;
 	std::string::size_type idx;
 
-	idx = m_path.rfind('.');
+	idx = m_file.rfind('.');
 
 	if (idx != std::string::npos)
 	{
-		ext = m_path.substr(idx + 1);
+		ext = m_file.substr(idx + 1);
 	}
 	else
 	{
 		std::cerr << "Couldn't extract shader type from file name!\n";
-		return;
 	}
 
 	if (ext == "vs")
 	{
-		m_type = SHADER::TYPE::VERTEX_SHADER;
+		return SHADER::TYPE::VERTEX_SHADER;
 	}
 	else if (ext == "gs")
 	{
-		m_type = SHADER::TYPE::GEOMETRY_SHADER;
+		return SHADER::TYPE::GEOMETRY_SHADER;
 	}
 	else if (ext == "tcs")
 	{
-		m_type = SHADER::TYPE::TESS_CONTROL_SHADER;
+		return SHADER::TYPE::TESS_CONTROL_SHADER;
 	}
 	else if (ext == "tes")
 	{
-		m_type = SHADER::TYPE::TESS_EVALUATION_SHADER;
+		return SHADER::TYPE::TESS_EVALUATION_SHADER;
 	}
 	else if (ext == "fs")
 	{
-		m_type = SHADER::TYPE::FRAGMENT_SHADER;
+		return SHADER::TYPE::FRAGMENT_SHADER;
 	}
 	else if (ext == "cs")
 	{
-		m_type = SHADER::TYPE::COMPUTE_SHADER;
+		return SHADER::TYPE::COMPUTE_SHADER;
 	}
 	else
 	{
@@ -177,31 +179,16 @@ void GLShader::TypeFromExtension()
 /// Identifiers shader instance.
 /// </summary>
 /// <returns>Shader ID</returns>
-GLuint GLShader::ID() const
+GLuint Shader::ID() const
 {
 	return m_id;
 }
 
 /// <summary>
-/// Shader name getter.
+/// Returns shader type.
 /// </summary>
-/// <returns>Shader filename</returns>
-std::string GLShader::FileName() const
+/// <returns></returns>
+SHADER::TYPE Shader::Type() const
 {
-	std::string file;
-	const std::string::size_type last_slash_idx = m_path.find_last_of("\\/");
-	
-	if (std::string::npos != last_slash_idx)
-	{
-		return { std::find_if(m_path.rbegin(), m_path.rend(),[](char c) { return c == '/'; }).base(), m_path.end() };
-	}
-}
-
-/// <summary>
-/// Shader source file path getter.
-/// </summary>
-/// <returns>Path to shader source file</returns>
-std::string& GLShader::PathToFile()
-{
-	return m_path;
+	return m_type;
 }

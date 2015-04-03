@@ -2,7 +2,7 @@
 
 #include <GL\glew.h>
 #include <pp_types.h>
-#include <GLShaderProgram.h>
+#include <SProgram.h>
 
 class Model
 {
@@ -19,7 +19,7 @@ public:
 
 	// Getters
 	const Vec3&			Position() const;
-	GLShaderProgram*	Program() const;
+	SProgram*	Program() const;
 
 	void Render();
 	void Init();
@@ -34,6 +34,6 @@ private:
 	Mat4				m_model;
 	Vec3				m_position;
 	Vec3				m_scale;
-	GLShaderProgram*	m_program;
+	SProgram*	m_program;
 	bool				m_initialized;
 };

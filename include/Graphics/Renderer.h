@@ -2,7 +2,6 @@
 
 #include <Graphics\Color.h>
 #include <Graphics\Rectangle.h>
-#include <Graphics\Camera.h>
 #include <pp_types.h>
 
 namespace RENDERER

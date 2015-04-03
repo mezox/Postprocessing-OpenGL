@@ -6,12 +6,12 @@
 #include <GL/glew.h>
 #include <GL/GL.h>
 
-#include <Graphics\Color.h>
+#include <Color.h>
 #include <GLRenderer.h>
 #include <Loader.h>
 
-#include <GLShader.h>
-#include <GLShaderProgram.h>
+#include <Shader.h>
+#include <SProgram.h>
 
 /// <summary>
 /// Initializes a new instance of the <see cref="SDLAppWindow"/> class.
@@ -72,7 +72,7 @@ void SDLAppWindow::Init()
 		std::cout << "SDL failed to initialize %s\n";
 	}
 
-	cstring title = "SDL Window";
+	cstring title = "OpenGL Postprocessing";
 
 	m_win_handler = SDL_CreateWindow(
 		title.c_str(),
@@ -245,12 +245,7 @@ void SDLAppWindow::Run()
 
 	//Model* model = loader->LoadToVAO(vertices);
 
-	GLShader* vs = new GLShader("Shaders/test.vs");
-	GLShader* fs = new GLShader("Shaders/test.fs");
-
-	GLShaderProgram* prg = new GLShaderProgram();
-	prg->AttachShader(vs);
-	prg->AttachShader(fs);
+	SProgram* prg = new SProgram("test");
 	prg->Create();
 
 	timer.Start();

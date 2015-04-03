@@ -1,6 +1,9 @@
 #pragma once
 
 #include <pp_types.h>
+#include <GL\glew.h>
+
+#define SHADER_DIR "Shaders/"
 
 namespace SHADER
 {
@@ -19,8 +22,21 @@ namespace SHADER
 class Shader
 {
 public:
-	virtual ~Shader() {}
+	Shader(std::string);
+	~Shader();
 
-protected:
-	virtual std::string Readfile(const std::string& file) = 0;
+	GLuint			ID() const;
+	SHADER::TYPE	Type() const;
+	bool			Load();
+	void			Compile();
+
+private:
+	void			ValidateCompile();
+	SHADER::TYPE	TypeFromExtension();
+
+private:
+	GLuint			m_id;
+	SHADER::TYPE	m_type;
+	std::string		m_file;
+	std::string		m_raw;
 };

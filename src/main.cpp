@@ -1,7 +1,6 @@
 #include <iostream>
 #include <SDLWindow.h>
-#include <Graphics\GLShader.h>
-#include <GLShaderProgram.h>
+#include <SProgram.h>
 
 #undef main
 
