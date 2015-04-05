@@ -12,6 +12,7 @@
 
 #include <Shader.h>
 #include <SProgram.h>
+#include <GLRenderPass.h>
 
 /// <summary>
 /// Initializes a new instance of the <see cref="SDLAppWindow"/> class.
@@ -90,7 +91,7 @@ void SDLAppWindow::Init()
 		return;
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
@@ -222,7 +223,7 @@ void SDLAppWindow::SwapBuffers()
 void SDLAppWindow::Run()
 {
 	SDLTimer timer;
-
+	
 	//Loader* loader = new Loader();
 
 	static const GLfloat g_vertex_buffer_data[] = {
@@ -230,6 +231,14 @@ void SDLAppWindow::Run()
 		0.5f, -0.5f,  0.0f,
 		-0.5f, -0.5f,  0.0f
 	};
+
+	static const GLfloat tex_vertex_buffer_data[] = {
+		-1.0f, -1.0f, 0.0, 0.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 1.0f
+	};
+	//Model* model = loader->LoadToVAO(vertices);
 
 	GLuint vertexbuffer;
 
@@ -242,11 +251,31 @@ void SDLAppWindow::Run()
 	// Give our vertices to OpenGL.
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
+	GLuint vertexBufferTex;
 
-	//Model* model = loader->LoadToVAO(vertices);
+	// Generate 1 buffer, put the resulting identifier in vertexbuffer
+	glGenBuffers(1, &vertexBufferTex);
 
-	SProgram* prg = new SProgram("test");
-	prg->Create();
+	// The following commands will talk about our 'vertexbuffer' buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferTex);
+
+	// Give our vertices to OpenGL.
+	glBufferData(GL_ARRAY_BUFFER, sizeof(tex_vertex_buffer_data), tex_vertex_buffer_data, GL_STATIC_DRAW);
+
+	GLRenderPass *renderPass = new GLRenderPass();
+	renderPass->Init("test");
+
+
+	std::string programEffects[] = { "texture", "texture", "texture" };
+	GLRenderPass *effects[3];
+	for (int i = 0; i < ARRAYSIZE(effects); i++)
+	{
+		effects[i] = new GLRenderPass();
+		effects[i]->Init(programEffects[i]);
+	}
+
+	GLRenderPass *finalPass = new GLRenderPass();
+	finalPass->Init("texture");
 
 	timer.Start();
 	m_running = true;
@@ -282,11 +311,9 @@ void SDLAppWindow::Run()
 			}
 		}
 
+		glBindFramebuffer(GL_FRAMEBUFFER, renderPass->GetFrameBuffer());
 		m_renderer->ClearBuffer(RENDERER::CLEAR::COLOR_DEPTH_BUFFER);
-
-
-
-		prg->Bind();
+		renderPass->GetProgram()->Bind();
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(
@@ -302,11 +329,31 @@ void SDLAppWindow::Run()
 		glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 
 		glDisableVertexAttribArray(0);
-		prg->Unbind();
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferTex);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
 
+		GLuint lastPassBuffer = renderPass->GetFrameBuffer();
+		for (int i = 0; i < ARRAYSIZE(effects); i++)
+		{
+			GLRenderPass *effect = effects[i];
+			glBindFramebuffer(GL_FRAMEBUFFER, effect->GetFrameBuffer());
+			effect->GetProgram()->Bind();
+			effect->GetProgram()->BindUniform("tex", 0);
+			glBindTexture(GL_TEXTURE_2D, lastPassBuffer);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); 
+			lastPassBuffer = effect->GetFrameBuffer();
+		}
 		
-		
-		
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		finalPass->GetProgram()->Bind();
+		finalPass->GetProgram()->BindUniform("tex", 0);
+		glBindTexture(GL_TEXTURE_2D, lastPassBuffer);
+
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); 
+
 
 		m_mouse_state->Update();
 		m_key_state->Update();
