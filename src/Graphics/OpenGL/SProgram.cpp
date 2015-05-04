@@ -160,7 +160,18 @@ uint8 SProgram::AttribLocation(std::string name)
 /// <param name="name">Location</param>
 uint8 SProgram::UniLocation(std::string name)
 {
-	return (m_uniforms.find(name) == m_uniforms.end()) ? -1 : m_uniforms.find(name)->second;
+	uint8 result = 0;
+	if (m_uniforms.find(name) == m_uniforms.end())
+	{
+		GLint loc = glGetUniformLocation(m_program_id, name.c_str());
+		m_uniforms.insert(std::pair<std::string,uint8>(name,loc));
+		result = loc;
+	}
+	else
+	{
+		result = m_uniforms.find(name)->second;
+	} 
+	return result;
 }
 
 /// <summary>

@@ -265,9 +265,8 @@ void SDLAppWindow::Run()
 	GLRenderPass *renderPass = new GLRenderPass();
 	renderPass->Init("test");
 
-
-	std::string programEffects[] = { "texture", "texture", "texture" };
-	GLRenderPass *effects[3];
+	std::string programEffects[] = { "gray", "chromatic", "blur", "bloom", "shatter", "shockwave", "sepia"};
+	GLRenderPass *effects[7];
 	for (int i = 0; i < ARRAYSIZE(effects); i++)
 	{
 		effects[i] = new GLRenderPass();
@@ -279,17 +278,22 @@ void SDLAppWindow::Run()
 
 	timer.Start();
 	m_running = true;
+	float time = 0;
 	while (m_running)
 	{
 		timer.Tick();
-
+		time += timer.DeltaTime() / 1000.0f;
+		if (time > 60.0f)
+		{
+			time -= 60.0f;
+		}
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
 			{
 			case SDL_QUIT:
-				Destroy();
+				m_running = false;
 				break;
 			
 			case SDL_KEYDOWN:
@@ -310,24 +314,32 @@ void SDLAppWindow::Run()
 				break;
 			}
 		}
-
+		if (m_key_state->SingleKey(SDL_SCANCODE_ESCAPE))
+		{
+			m_running = false;
+		}
+		static SDL_Scancode scancodes[] = {SDL_SCANCODE_F1, SDL_SCANCODE_F2, SDL_SCANCODE_F3, 
+			SDL_SCANCODE_F4, SDL_SCANCODE_F5, SDL_SCANCODE_F6, 
+			SDL_SCANCODE_F7, SDL_SCANCODE_F8, SDL_SCANCODE_F9 };
+		for (int i = 0; i < ARRAYSIZE(effects) && i < ARRAYSIZE(scancodes); i++)
+		{
+			if (m_key_state->SingleKey(scancodes[i]))
+			{
+				effects[i]->ToggleActive();
+			}
+		}
+		// DRAW SCENE
 		glBindFramebuffer(GL_FRAMEBUFFER, renderPass->GetFrameBuffer());
 		m_renderer->ClearBuffer(RENDERER::CLEAR::COLOR_DEPTH_BUFFER);
 		renderPass->GetProgram()->Bind();
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(
-			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-			);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		// Draw the triangle !
 		glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 
+		// POSTPROCESSING
 		glDisableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferTex);
 		glEnableVertexAttribArray(0);
@@ -339,14 +351,18 @@ void SDLAppWindow::Run()
 		for (int i = 0; i < ARRAYSIZE(effects); i++)
 		{
 			GLRenderPass *effect = effects[i];
+			if (!effect->IsActive())
+				continue;
 			glBindFramebuffer(GL_FRAMEBUFFER, effect->GetFrameBuffer());
 			effect->GetProgram()->Bind();
 			effect->GetProgram()->BindUniform("tex", 0);
+			effect->GetProgram()->BindUniform("time", time);
 			glBindTexture(GL_TEXTURE_2D, lastPassBuffer);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); 
 			lastPassBuffer = effect->GetFrameBuffer();
 		}
 		
+		// Draw to Screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		finalPass->GetProgram()->Bind();
 		finalPass->GetProgram()->BindUniform("tex", 0);
@@ -360,7 +376,8 @@ void SDLAppWindow::Run()
 
 		SwapBuffers();
 	}
-
+	
+	Destroy();
 	//delete loader;
 }
 
